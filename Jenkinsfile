@@ -1,3 +1,4 @@
+cat > Jenkinsfile <<'EOF'
 pipeline {
     agent any
 
@@ -28,6 +29,21 @@ pipeline {
             }
         }
 
+        stage('Security Scan') {
+            steps {
+                echo 'Running Trivy security scan...'
+                sh '''
+                    trivy image \
+                    --scanners vuln \
+                    --pkg-types os \
+                    --skip-db-update \
+                    --format table \
+                    -o security-scan-report.txt \
+                    ${IMAGE_NAME}:${BUILD_NUMBER}
+                '''
+            }
+        }
+
         stage('Package') {
             steps {
                 echo 'Docker image packaged successfully.'
@@ -35,4 +51,12 @@ pipeline {
             }
         }
     }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'security-scan-report.txt',
+                             allowEmptyArchive: true
+        }
+    }
 }
+EOF
