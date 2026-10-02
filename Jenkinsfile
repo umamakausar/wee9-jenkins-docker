@@ -35,7 +35,6 @@ pipeline {
                     trivy image \
                     --scanners vuln \
                     --pkg-types os \
-                    --skip-db-update \
                     --format table \
                     -o security-scan-report.txt \
                     ${IMAGE_NAME}:${BUILD_NUMBER}
